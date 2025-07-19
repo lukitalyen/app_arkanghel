@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<AuthService>(
         builder: (context, auth, child) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             navigatorKey: navigatorKey,
             title: 'Project Arkanghel',
             theme: ThemeData(

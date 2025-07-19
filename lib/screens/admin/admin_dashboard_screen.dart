@@ -1,5 +1,5 @@
 import 'package:app_arkanghel/services/auth_service.dart';
-import 'package:app_arkanghel/widgets/critical_learning_areas.dart';
+
 import 'package:app_arkanghel/widgets/top_user_list.dart';
 import 'package:app_arkanghel/widgets/charts/assessment_tracker_chart.dart';
 import 'package:app_arkanghel/widgets/charts/overview_chart.dart';
@@ -32,9 +32,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: SummaryCard(title: 'Total Users', value: userCount, icon: Icons.people, color: Colors.blue)),
+                  Expanded(
+                    child: SummaryCard(
+                      title: 'Total Users',
+                      value: userCount,
+                      icon: Icons.people_outline,
+                      color: Colors.blue,
+                      percentage: '12.5%',
+                      isPositive: true,
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  const Expanded(child: SummaryCard(title: 'Overall Score Assessment', value: '80%', icon: Icons.assessment, color: Colors.orange)),
+                  const Expanded(
+                    child: SummaryCard(
+                      title: 'Engagements',
+                      value: '80.2k',
+                      icon: Icons.show_chart,
+                      color: Colors.teal,
+                      percentage: '25.8%',
+                      isPositive: true,
+                    ),
+                  ),
                 ],
               );
             },
@@ -42,9 +60,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 16),
           Row(
             children: const [
-              Expanded(child: SummaryCard(title: 'Learning Module (Completed)', value: '5', icon: Icons.book, color: Colors.green)),
+              Expanded(
+                child: SummaryCard(
+                  title: 'Completed Assessments',
+                  value: '1.2k',
+                  icon: Icons.assignment_turned_in_outlined,
+                  color: Colors.orange,
+                  percentage: '15.2%',
+                  isPositive: false,
+                ),
+              ),
               SizedBox(width: 16),
-              Expanded(child: SummaryCard(title: 'Module Assessment (Completed)', value: '4', icon: Icons.check_circle, color: Colors.red)),
+              Expanded(
+                child: SummaryCard(
+                  title: 'Completed Workstreams',
+                  value: '25',
+                  icon: Icons.check_circle_outline,
+                  color: Colors.indigo,
+                  percentage: '30.1%',
+                  isPositive: true,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -64,7 +100,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 24),
           // Training Module Assessment Tracker
-          const ChartCard(
+          ChartCard(
             title: 'Training Module Assessment Tracker',
             child: SizedBox(height: 200, child: AssessmentTrackerChart()),
           ),
@@ -74,12 +110,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             title: 'Top User Completed Tracker',
             child: TopUserList(),
           ),
-          const SizedBox(height: 24),
-          // Critical Learning Areas
-          const ChartCard(
-            title: 'Critical Learning Areas',
-            child: CriticalLearningAreas(),
-          ),
+
         ],
       ),
     );
@@ -91,32 +122,70 @@ class SummaryCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final String percentage;
+  final bool isPositive;
 
-  const SummaryCard({super.key, required this.title, required this.value, required this.icon, required this.color});
+  const SummaryCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.percentage,
+    required this.isPositive,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Container(
-        height: 100, // Enforce a consistent height
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(
-                  child: Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                Icon(icon, color: color),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
-            const Spacer(),
-            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: isPositive ? Colors.green : Colors.red,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  percentage,
+                  style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
           ],
         ),
       ),

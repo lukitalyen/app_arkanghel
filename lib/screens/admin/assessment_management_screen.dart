@@ -42,45 +42,92 @@ class AssessmentManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<AssessmentService>(
-        builder: (context, assessmentService, child) {
-          final assessments = assessmentService.assessments;
-          if (assessments.isEmpty) {
-            return const Center(child: Text('No assessments found.'));
-          }
-
-          return ListView.builder(
-            itemCount: assessments.length,
-            itemBuilder: (context, index) {
-              final assessment = assessments[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(assessment.title),
-                  subtitle: Text('Chapter ID: ${assessment.chapterId} - ${assessment.questions.length} questions'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _navigateToAddEditScreen(context, assessment),
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<AssessmentService>(
+              builder: (context, assessmentService, child) {
+                final assessments = assessmentService.assessments;
+                if (assessments.isEmpty) {
+                  return const Center(child: Text('No assessments found.'));
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  itemCount: assessments.length,
+                  itemBuilder: (context, index) {
+                    final assessment = assessments[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteAssessment(context, assessment.id),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        leading: CircleAvatar(
+                          backgroundColor: const Color(0xFFDBEAFE),
+                          child: Icon(Icons.library_books, color: Color(0xFF2563EB)),
+                        ),
+                        title: Text(
+                          assessment.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+                        ),
+                        subtitle: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${assessment.questions.length} Questions',
+                                style: const TextStyle(color: Color(0xFF92400E), fontWeight: FontWeight.w500, fontSize: 12),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text('Chapter: ${assessment.chapterId}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_rounded, color: Color(0xFF2563EB)),
+                              onPressed: () => _navigateToAddEditScreen(context, assessment),
+                              tooltip: 'Edit',
+                            ),
+                            const SizedBox(width: 6),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                              onPressed: () => _deleteAssessment(context, assessment.id),
+                              tooltip: 'Delete',
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddEditScreen(context),
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF2563EB),
+        child: const Icon(Icons.add, color: Colors.white),
         tooltip: 'Add Assessment',
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

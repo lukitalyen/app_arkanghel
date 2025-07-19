@@ -34,7 +34,13 @@ class OverviewChart extends StatelessWidget {
               showTitles: true,
               reservedSize: 30,
               interval: _getInterval(),
-              getTitlesWidget: bottomTitleWidgets,
+              getTitlesWidget: (value, meta) {
+                // Prevents drawing titles out of bounds
+                if (value < meta.min || value > meta.max) {
+                  return Container();
+                }
+                return bottomTitleWidgets(value, meta);
+              },
             ),
           ),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -75,15 +81,13 @@ class OverviewChart extends StatelessWidget {
 
     switch (period) {
       case TimePeriod.week:
+        // Shows Mo, We, Fr, Su
         switch (value.toInt()) {
           case 0: text = const Text('Mo', style: style); break;
-          case 1: text = const Text('Tu', style: style); break;
           case 2: text = const Text('We', style: style); break;
-          case 3: text = const Text('Th', style: style); break;
           case 4: text = const Text('Fr', style: style); break;
-          case 5: text = const Text('Sa', style: style); break;
           case 6: text = const Text('Su', style: style); break;
-          default: text = const Text('', style: style); break;
+          default: return Container(); // Return empty for other values
         }
         break;
       case TimePeriod.month:
@@ -92,24 +96,19 @@ class OverviewChart extends StatelessWidget {
           case 1: text = const Text('W2', style: style); break;
           case 2: text = const Text('W3', style: style); break;
           case 3: text = const Text('W4', style: style); break;
-          default: text = const Text('', style: style); break;
+          default: return Container();
         }
         break;
       case TimePeriod.year:
+        // Shows Ja, Ma, My, etc.
         switch (value.toInt()) {
           case 0: text = const Text('Ja', style: style); break;
-          case 1: text = const Text('Fe', style: style); break;
           case 2: text = const Text('Ma', style: style); break;
-          case 3: text = const Text('Ap', style: style); break;
           case 4: text = const Text('My', style: style); break;
-          case 5: text = const Text('Jn', style: style); break;
           case 6: text = const Text('Jl', style: style); break;
-          case 7: text = const Text('Au', style: style); break;
           case 8: text = const Text('Se', style: style); break;
-          case 9: text = const Text('Oc', style: style); break;
           case 10: text = const Text('No', style: style); break;
-          case 11: text = const Text('De', style: style); break;
-          default: text = const Text('', style: style); break;
+          default: return Container();
         }
         break;
     }
@@ -137,12 +136,9 @@ class OverviewChart extends StatelessWidget {
 
   double _getInterval() {
     switch (period) {
-      case TimePeriod.week:
-        return 2;
-      case TimePeriod.month:
-        return 1;
-      case TimePeriod.year:
-        return 2;
+      case TimePeriod.week: return 2;
+      case TimePeriod.month: return 1;
+      case TimePeriod.year: return 2;
     }
   }
 

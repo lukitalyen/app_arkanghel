@@ -1,128 +1,134 @@
-import 'package:app_arkanghel/models/workstream.dart';
-import 'package:app_arkanghel/models/chapter.dart';
 import 'package:app_arkanghel/models/assessment.dart';
+import 'package:app_arkanghel/models/chapter.dart';
 import 'package:app_arkanghel/models/leaderboard_entry.dart';
+import 'package:app_arkanghel/models/user.dart';
+import 'package:app_arkanghel/models/workstream.dart';
 
 final List<Workstream> dummyWorkstreams = [
   Workstream(
-    id: '1',
+    id: 'ws1',
     title: 'Data Architecture',
-    description: 'This is Workstream 1',
-    imageUrl: 'https://via.placeholder.com/150',
+    description: 'Learn about modern data architecture principles and best practices.',
+    imageUrl: 'https://example.com/data-architecture.jpg',
     isPublished: true,
     chapters: [
-      Chapter(id: '1-1', title: 'Chapter 1', description: 'Description for chapter 1'),
-      Chapter(id: '1-2', title: 'Chapter 2', description: 'Description for chapter 2'),
+      Chapter(id: 'ch1', title: 'Introduction to Data Architecture', description: 'Data architecture is the foundation...', pdfUrl: null, videoUrl: null),
+      Chapter(id: 'ch2', title: 'Data Modeling Concepts', description: 'Understanding data models...', pdfUrl: null, videoUrl: null),
     ],
   ),
   Workstream(
-    id: '2',
+    id: 'ws2',
     title: 'Boiler Digital Twin',
-    description: 'This is Workstream 2',
-    imageUrl: 'https://via.placeholder.com/150',
+    description: 'Explore digital twin technology for boiler systems.',
+    imageUrl: 'https://example.com/boiler-twin.jpg',
     isPublished: true,
     chapters: [
-      Chapter(id: '2-1', title: 'Chapter 1', description: 'Description for chapter 1'),
-      Chapter(id: '2-2', title: 'Chapter 2', description: 'Description for chapter 2'),
-      Chapter(id: '2-3', title: 'Chapter 3', description: 'Description for chapter 3'),
+      Chapter(id: 'ch3', title: 'Digital Twin Fundamentals', description: 'What is a digital twin...', pdfUrl: null, videoUrl: null),
     ],
   ),
   Workstream(
-    id: '3',
+    id: 'ws3',
     title: 'Anomaly Detection',
-    description: 'This is Workstream 3',
-    imageUrl: 'https://via.placeholder.com/150',
+    description: 'Learn advanced anomaly detection techniques.',
+    imageUrl: 'https://example.com/anomaly-detection.jpg',
     isPublished: true,
-    chapters: [
-      Chapter(id: '3-1', title: 'Chapter 1', description: 'Description for chapter 1'),
-    ],
-  ),
-  Workstream(
-    id: '4',
-    title: 'Unified Health Management System',
-    description: 'This is Workstream 4',
-    imageUrl: 'https://via.placeholder.com/150',
-    isPublished: false,
     chapters: [],
   ),
   Workstream(
-    id: '5',
+    id: 'ws4',
+    title: 'Unified Health Management System',
+    description: 'Comprehensive health management system overview.',
+    imageUrl: 'https://example.com/health-management.jpg',
+    isPublished: true,
+    chapters: [],
+  ),
+  Workstream(
+    id: 'ws5',
     title: 'Asset Information & Virtual Plant',
-    description: 'This is Workstream 5',
-    imageUrl: 'https://via.placeholder.com/150',
+    description: 'Asset management and virtual plant technologies.',
+    imageUrl: 'https://example.com/asset-management.jpg',
     isPublished: true,
-    chapters: [
-      Chapter(id: '5-1', title: 'Chapter 1', description: 'Description for chapter 1'),
-      Chapter(id: '5-2', title: 'Chapter 2', description: 'Description for chapter 2'),
-    ],
+    chapters: [],
   ),
   Workstream(
-    id: '6',
+    id: 'ws6',
     title: 'Operator Rounds',
-    description: 'This is Workstream 6',
-    imageUrl: 'https://via.placeholder.com/150',
+    description: 'Efficient operator round procedures and protocols.',
+    imageUrl: 'https://example.com/operator-rounds.jpg',
     isPublished: true,
-    chapters: [
-      Chapter(id: '6-1', title: 'Chapter 1', description: 'Description for chapter 1'),
-      Chapter(id: '6-2', title: 'Chapter 2', description: 'Description for chapter 2'),
-      Chapter(id: '6-3', title: 'Chapter 3', description: 'Description for chapter 3'),
-      Chapter(id: '6-4', title: 'Chapter 4', description: 'Description for chapter 4'),
-    ],
+    chapters: [],
   ),
   Workstream(
-    id: '7',
+    id: 'ws7',
     title: 'Change Management & Culture Transformation',
-    description: 'This is Workstream 7',
-    imageUrl: 'https://via.placeholder.com/150',
-    isPublished: false,
+    description: 'Leading organizational change and culture transformation.',
+    imageUrl: 'https://example.com/change-management.jpg',
+    isPublished: true,
     chapters: [],
   ),
 ];
 
+final List<User> dummyUsers = [
+  User(id: 'user1', email: 'john.doe@company.com', fullName: 'John Doe', role: UserRole.employee, dateCreated: DateTime.now().subtract(const Duration(days: 30))),
+  User(id: 'user2', email: 'jane.smith@company.com', fullName: 'Jane Smith', role: UserRole.employee, dateCreated: DateTime.now().subtract(const Duration(days: 25))),
+  User(id: 'user3', email: 'admin@company.com', fullName: 'Admin User', role: UserRole.admin, dateCreated: DateTime.now().subtract(const Duration(days: 60))),
+  User(id: 'user4', email: 'mike.johnson@company.com', fullName: 'Mike Johnson', role: UserRole.employee, dateCreated: DateTime.now().subtract(const Duration(days: 20))),
+  User(id: 'user5', email: 'sarah.wilson@company.com', fullName: 'Sarah Wilson', role: UserRole.employee, dateCreated: DateTime.now().subtract(const Duration(days: 15))),
+];
+
 final List<Assessment> dummyAssessments = [
   Assessment(
-    id: 'A1',
-    title: 'Data Architecture Basics',
-    workstreamId: '1',
-    chapterId: '1-1',
+    id: 'assessment1',
+    title: 'Data Architecture Fundamentals',
+    workstreamId: 'ws1',
+    chapterId: 'ch1',
     questions: [
       Question(
-        id: 'Q1',
-        text: 'What is the primary key in a database?',
+        id: 'q1',
+        text: 'What is the primary purpose of data architecture?',
         type: QuestionType.multipleChoice,
-        options: ['A unique identifier for a record', 'A foreign key', 'An index', 'A data type'],
-        correctAnswerIndex: 0,
+        options: [
+          'To store data',
+          'To provide a blueprint for data management',
+          'To analyze data',
+          'To delete data'
+        ],
+        correctAnswerIndex: 1,
       ),
       Question(
-        id: 'Q2',
-        text: 'What does SQL stand for?',
-        type: QuestionType.identification,
-        options: [], // Identification questions have no options
-        correctAnswerIndex: 0, // Not applicable, but required by model
-      ),
-    ],
-  ),
-  Assessment(
-    id: 'A2',
-    title: 'Digital Twin Concepts',
-    workstreamId: '2',
-    chapterId: '2-1',
-    questions: [
-      Question(
-        id: 'Q3',
-        text: 'A digital twin is a virtual representation of a physical object or system.',
-        type: QuestionType.trueOrFalse,
+        id: 'q2',
+        text: 'Data models are essential for understanding data relationships.',
+        type: QuestionType.trueFalse,
         options: ['True', 'False'],
         correctAnswerIndex: 0,
       ),
     ],
   ),
+  Assessment(
+    id: 'assessment2',
+    title: 'Digital Twin Basics',
+    workstreamId: 'ws2',
+    chapterId: 'ch3',
+    questions: [
+      Question(
+        id: 'q3',
+        text: 'A digital twin is a virtual representation of what?',
+        type: QuestionType.multipleChoice,
+        options: [
+          'A physical object or system',
+          'A database',
+          'A software application',
+          'A network'
+        ],
+        correctAnswerIndex: 0,
+      ),
+    ],
+  ),
 ];
 
-final List<LeaderboardEntry> dummyLeaderboardEntries = [
-  LeaderboardEntry(userId: 'user-1', userName: 'John Doe', score: 1500, rank: 1),
-  LeaderboardEntry(userId: 'user-2', userName: 'Jane Smith', score: 1450, rank: 2),
-  LeaderboardEntry(userId: 'user-3', userName: 'Peter Jones', score: 1300, rank: 3),
-  LeaderboardEntry(userId: 'user-4', userName: 'Mary Williams', score: 1250, rank: 4),
-  LeaderboardEntry(userId: 'user-5', userName: 'David Brown', score: 1100, rank: 5),
+final List<LeaderboardEntry> dummyLeaderboard = [
+  LeaderboardEntry(userId: 'user1', userName: 'John Doe', score: 95.5, rank: 1),
+  LeaderboardEntry(userId: 'user2', userName: 'Jane Smith', score: 92.0, rank: 2),
+  LeaderboardEntry(userId: 'user4', userName: 'Mike Johnson', score: 88.5, rank: 3),
+  LeaderboardEntry(userId: 'user5', userName: 'Sarah Wilson', score: 85.0, rank: 4),
 ];

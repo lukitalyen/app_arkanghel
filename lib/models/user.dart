@@ -4,8 +4,9 @@ class User {
   final String id;
   final String fullName;
   final String email;
-  final UserRole role;
   final String? avatarUrl;
+  final UserRole role;
+
   final DateTime dateCreated;
   final List<String> assignedWorkstreamIds;
   final List<String> completedChapterIds;
@@ -15,13 +16,40 @@ class User {
     required this.id,
     required this.fullName,
     required this.email,
-    required this.role,
     this.avatarUrl,
+    required this.role,
+
     required this.dateCreated,
     this.assignedWorkstreamIds = const [],
     this.completedChapterIds = const [],
     this.assessmentResults = const [],
   });
+
+  User copyWith({
+    String? id,
+    String? fullName,
+    String? email,
+    String? avatarUrl,
+    UserRole? role,
+
+    DateTime? dateCreated,
+    List<String>? assignedWorkstreamIds,
+    List<String>? completedChapterIds,
+    List<AssessmentResult>? assessmentResults,
+  }) {
+    return User(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      role: role ?? this.role,
+
+      dateCreated: dateCreated ?? this.dateCreated,
+      assignedWorkstreamIds: assignedWorkstreamIds ?? this.assignedWorkstreamIds,
+      completedChapterIds: completedChapterIds ?? this.completedChapterIds,
+      assessmentResults: assessmentResults ?? this.assessmentResults,
+    );
+  }
 }
 
 class AssessmentResult {

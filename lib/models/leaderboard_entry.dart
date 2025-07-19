@@ -1,7 +1,7 @@
 class LeaderboardEntry {
   final String userId;
   final String userName;
-  final int score;
+  final double score;
   final int rank;
 
   LeaderboardEntry({

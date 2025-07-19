@@ -18,6 +18,7 @@ class AuthService with ChangeNotifier {
       email: 'admin@aboitiz.com',
       role: UserRole.admin,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/1/200',
     ),
     User(
       id: '2',
@@ -27,6 +28,7 @@ class AuthService with ChangeNotifier {
       dateCreated: DateTime.now(),
       assignedWorkstreamIds: ['1', '2'], // Assign two workstreams
       completedChapterIds: ['1-1', '2-1'], // Complete one chapter in each
+      avatarUrl: 'https://picsum.photos/seed/2/200',
     ),
     User(
       id: 'user-1',
@@ -34,6 +36,7 @@ class AuthService with ChangeNotifier {
       email: 'john.doe@aboitiz.com',
       role: UserRole.employee,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/3/200',
     ),
     User(
       id: 'user-2',
@@ -41,6 +44,7 @@ class AuthService with ChangeNotifier {
       email: 'jane.smith@aboitiz.com',
       role: UserRole.employee,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/4/200',
     ),
     User(
       id: 'user-3',
@@ -48,6 +52,7 @@ class AuthService with ChangeNotifier {
       email: 'peter.jones@aboitiz.com',
       role: UserRole.employee,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/5/200',
     ),
     User(
       id: 'user-4',
@@ -55,6 +60,7 @@ class AuthService with ChangeNotifier {
       email: 'mary.williams@aboitiz.com',
       role: UserRole.employee,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/6/200',
     ),
     User(
       id: 'user-5',
@@ -62,6 +68,7 @@ class AuthService with ChangeNotifier {
       email: 'david.brown@aboitiz.com',
       role: UserRole.employee,
       dateCreated: DateTime.now(),
+      avatarUrl: 'https://picsum.photos/seed/7/200',
     ),
   ];
 

@@ -1,6 +1,7 @@
 import 'package:app_arkanghel/models/user.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AddEditUserScreen extends StatefulWidget {
   final User? user;
@@ -13,7 +14,6 @@ class AddEditUserScreen extends StatefulWidget {
 
 class _AddEditUserScreenState extends State<AddEditUserScreen> {
   final _formKey = GlobalKey<FormState>();
-  final AuthService _authService = AuthService();
   late String _fullName;
   late String _email;
   late UserRole _role;
@@ -26,10 +26,12 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
     _role = widget.user?.role ?? UserRole.employee;
   }
 
-    void _saveForm() async {
+  void _saveForm() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final user = User(
+      final authService = Provider.of<AuthService>(context, listen: false);
+
+      final userData = User(
         id: widget.user?.id ?? DateTime.now().toString(),
         fullName: _fullName,
         email: _email,
@@ -39,11 +41,11 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
       );
 
       if (widget.user == null) {
-        await _authService.addUser(user);
+        authService.addUser(userData);
       } else {
-        await _authService.updateUser(user);
+        authService.updateUser(userData);
       }
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop();
     }
   }
 

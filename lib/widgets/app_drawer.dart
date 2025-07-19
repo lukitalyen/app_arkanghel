@@ -166,27 +166,49 @@ class _DrawerMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: isSelected ? Colors.blue[100] : Colors.transparent,
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 48, // Adjust height to match ListTile
-            color: isSelected ? Colors.blue[800] : Colors.transparent,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
           ),
-          Expanded(
-            child: ListTile(
-              leading: Icon(
-                icon,
-                color: isSelected ? Colors.blue[800] : Colors.grey[600],
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 40, 
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue[800] : Colors.transparent,
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(4),
+                    bottomRight: Radius.circular(4),
+                  ),
+                ),
               ),
-              title: Text(title),
-              selected: isSelected,
-              onTap: onTap,
-            ),
+              Expanded(
+                child: ListTile(
+                  leading: Icon(
+                    icon,
+                    color: isSelected ? Colors.blue[800] : Colors.grey[600],
+                  ),
+                  title: Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.blue[800] : Colors.black87,
+                    ),
+                  ),
+                  selected: isSelected,
+                  onTap: onTap, // InkWell handles the tap, but this is good for semantics
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

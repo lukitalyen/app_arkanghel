@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:app_arkanghel/models/assessment.dart';
-import 'package:app_arkanghel/models/user.dart';
 import 'package:app_arkanghel/services/assessment_service.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
+import 'package:app_arkanghel/services/leaderboard_service.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TakeAssessmentScreen extends StatefulWidget {
   final Assessment assessment;
@@ -11,13 +11,14 @@ class TakeAssessmentScreen extends StatefulWidget {
   const TakeAssessmentScreen({super.key, required this.assessment});
 
   @override
-  _TakeAssessmentScreenState createState() => _TakeAssessmentScreenState();
+  State<TakeAssessmentScreen> createState() => _TakeAssessmentScreenState();
 }
 
 class _TakeAssessmentScreenState extends State<TakeAssessmentScreen> {
-  final PageController _pageController = PageController();
   late List<int?> _selectedAnswers;
-  int _currentPage = 0;
+  int _currentQuestionIndex = 0;
+  bool _isSubmitted = false;
+  double? _score;
 
   @override
   void initState() {
@@ -25,117 +26,362 @@ class _TakeAssessmentScreenState extends State<TakeAssessmentScreen> {
     _selectedAnswers = List<int?>.filled(widget.assessment.questions.length, null);
   }
 
+  void _selectAnswer(int answerIndex) {
+    setState(() {
+      _selectedAnswers[_currentQuestionIndex] = answerIndex;
+    });
+  }
+
+  void _nextQuestion() {
+    if (_currentQuestionIndex < widget.assessment.questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+      });
+    }
+  }
+
+  void _previousQuestion() {
+    if (_currentQuestionIndex > 0) {
+      setState(() {
+        _currentQuestionIndex--;
+      });
+    }
+  }
+
   void _submitAssessment() {
     final assessmentService = Provider.of<AssessmentService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
+    final leaderboardService = Provider.of<LeaderboardService>(context, listen: false);
     
     final score = assessmentService.gradeAssessment(widget.assessment, _selectedAnswers);
     
-    final result = AssessmentResult(
-      assessmentId: widget.assessment.id,
-      score: score,
-      dateTaken: DateTime.now(),
-    );
+    // Add score to leaderboard
+    if (authService.currentUser != null) {
+      leaderboardService.addScore(
+        authService.currentUser!.id,
+        authService.currentUser!.fullName,
+        score,
+      );
+    }
     
-    authService.addAssessmentResult(result);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Assessment Complete'),
-        content: Text('You scored ${score.toStringAsFixed(1)}%'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(ctx).pop(); // Close the dialog
-              Navigator.of(context).pop(); // Go back from the assessment screen
-            },
-          ),
-        ],
-      ),
-    );
+    setState(() {
+      _score = score;
+      _isSubmitted = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final questions = widget.assessment.questions;
+    if (_isSubmitted) {
+      return _buildResultScreen();
+    }
+
+    final currentQuestion = widget.assessment.questions[_currentQuestionIndex];
+    final progress = (_currentQuestionIndex + 1) / widget.assessment.questions.length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.assessment.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: questions.length,
-                onPageChanged: (page) {
-                  setState(() {
-                    _currentPage = page;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final question = questions[index];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            // Header with progress
+            Container(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text('Question ${index + 1}/${questions.length}', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      Text(question.text, style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 24),
-                      if (question.options != null)
-                        ...question.options!.asMap().entries.map((entry) {
-                          int optionIndex = entry.key;
-                          String optionText = entry.value;
-                          return RadioListTile<int>(
-                            title: Text(optionText),
-                            value: optionIndex,
-                            groupValue: _selectedAnswers[index],
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedAnswers[index] = value;
-                              });
-                            },
-                          );
-                        }).toList(),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B)),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.assessment.title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                      ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(
+                        'Question ${_currentQuestionIndex + 1} of ${widget.assessment.questions.length}',
+                        style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${(progress * 100).round()}%',
+                        style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: const Color(0xFFE5E7EB),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  ),
+                ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (_currentPage > 0)
-                  TextButton.icon(
-                    icon: const Icon(Icons.arrow_back),
-                    label: const Text('Previous'),
-                    onPressed: () {
-                      _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                    },
+
+            // Question content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentQuestion.text,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildAnswerOptions(currentQuestion),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+
+            // Navigation buttons
+            Container(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  if (_currentQuestionIndex > 0)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _previousQuestion,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Previous'),
+                      ),
+                    ),
+                  if (_currentQuestionIndex > 0) const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _currentQuestionIndex == widget.assessment.questions.length - 1
+                          ? _submitAssessment
+                          : _nextQuestion,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        _currentQuestionIndex == widget.assessment.questions.length - 1
+                            ? 'Submit Assessment'
+                            : 'Next Question',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                if (_currentPage == questions.length - 1)
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.check),
-                    label: const Text('Submit'),
-                    onPressed: _submitAssessment,
-                    style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
-                  )
-                else
-                  TextButton.icon(
-                    label: const Text('Next'),
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: () {
-                       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
-                    },
-                  ),
-              ],
-            )
+                ],
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnswerOptions(Question question) {
+    if (question.type == QuestionType.shortAnswer) {
+      return TextFormField(
+        decoration: InputDecoration(
+          hintText: 'Enter your answer...',
+          filled: true,
+          fillColor: const Color(0xFFF9FAFB),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+        ),
+        maxLines: 3,
+        onChanged: (value) {
+          // For short answer, we'll store the answer as index 0 if not empty
+          _selectAnswer(value.trim().isNotEmpty ? 0 : -1);
+        },
+      );
+    }
+
+    return Column(
+      children: question.options.asMap().entries.map((entry) {
+        final index = entry.key;
+        final option = entry.value;
+        final isSelected = _selectedAnswers[_currentQuestionIndex] == index;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: InkWell(
+            onTap: () => _selectAnswer(index),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFFDBEAFE) : const Color(0xFFF9FAFB),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+                  width: 2,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 16)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      option,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildResultScreen() {
+    final scorePercentage = _score!.round();
+    final isPassed = scorePercentage >= 70;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(32.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      isPassed ? Icons.check_circle : Icons.cancel,
+                      size: 80,
+                      color: isPassed ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      isPassed ? 'Congratulations!' : 'Assessment Complete',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'You scored $scorePercentage%',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      isPassed
+                          ? 'Great job! You passed the assessment.'
+                          : 'Keep studying and try again.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text(
+                          'Back to Assessments',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

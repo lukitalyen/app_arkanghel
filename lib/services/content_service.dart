@@ -32,4 +32,22 @@ class ContentService with ChangeNotifier {
         .length;
     return completedChapters / totalChapters;
   }
+
+  void addWorkstream(Workstream workstream) {
+    _workstreams.add(workstream);
+    notifyListeners();
+  }
+
+  void updateWorkstream(Workstream updatedWorkstream) {
+    final index = _workstreams.indexWhere((w) => w.id == updatedWorkstream.id);
+    if (index != -1) {
+      _workstreams[index] = updatedWorkstream;
+      notifyListeners();
+    }
+  }
+
+  void deleteWorkstream(String workstreamId) {
+    _workstreams.removeWhere((w) => w.id == workstreamId);
+    notifyListeners();
+  }
 }

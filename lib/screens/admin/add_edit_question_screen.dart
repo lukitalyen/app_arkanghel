@@ -14,73 +14,38 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _text;
   late QuestionType _type;
-  int? _correctAnswerIndex;
-  List<TextEditingController> _optionControllers = [];
+  late List<String> _options;
+  late int _correctAnswerIndex;
 
   @override
   void initState() {
     super.initState();
     _text = widget.question?.text ?? '';
     _type = widget.question?.type ?? QuestionType.multipleChoice;
-    _correctAnswerIndex = widget.question?.correctAnswerIndex;
-
-    if (widget.question?.options != null) {
-      for (var option in widget.question!.options!) {
-        _optionControllers.add(TextEditingController(text: option));
-      }
-    }
-
-    if (_type == QuestionType.multipleChoice && _optionControllers.isEmpty) {
-      _optionControllers.add(TextEditingController());
-      _optionControllers.add(TextEditingController());
-    }
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _optionControllers) {
-      controller.dispose();
-    }
-    super.dispose();
+    _options = List<String>.from(widget.question?.options ?? ['', '', '', '']);
+    _correctAnswerIndex = widget.question?.correctAnswerIndex ?? 0;
   }
 
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
-      if (_type == QuestionType.multipleChoice && _correctAnswerIndex == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a correct answer.')),
-        );
-        return;
-      }
-
       _formKey.currentState!.save();
       
-      List<String> options = _optionControllers.map((c) => c.text).toList();
-      int correctIndex = _correctAnswerIndex ?? 0;
-
-      // For non-multiple choice, the options list is based on the type
-      if (_type == QuestionType.trueOrFalse) {
-        options = ['True', 'False'];
-      } else if (_type == QuestionType.identification) {
-        // For identification, the single option is the correct answer itself.
-        // The UI for this is simplified; we assume the first option is the answer.
-        if (options.isNotEmpty) {
-           correctIndex = 0; // The answer is the only option
-        } else {
-          // Handle case where no option is provided for identification
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please provide an answer for identification questions.')),
-          );
-          return;
-        }
+      // Filter out empty options for non-multiple choice questions
+      List<String> finalOptions = _options;
+      if (_type == QuestionType.trueFalse) {
+        finalOptions = ['True', 'False'];
+      } else if (_type == QuestionType.shortAnswer) {
+        finalOptions = [];
+      } else {
+        finalOptions = _options.where((option) => option.trim().isNotEmpty).toList();
       }
 
       final newQuestion = Question(
         id: widget.question?.id ?? DateTime.now().toString(),
         text: _text,
         type: _type,
-        options: options,
-        correctAnswerIndex: correctIndex,
+        options: finalOptions,
+        correctAnswerIndex: _correctAnswerIndex,
       );
       Navigator.of(context).pop(newQuestion);
     }
@@ -88,141 +53,239 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.question != null;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.question == null ? 'Add Question' : 'Edit Question'),
-        actions: [
-          IconButton(icon: const Icon(Icons.save), onPressed: _saveForm),
-        ],
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Custom Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isEdit ? 'Edit Question' : 'Add Question',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Question Text Section
+                      _buildSectionHeader('Question Text'),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: _text,
+                        decoration: InputDecoration(
+                          labelText: 'Question',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
+                        ),
+                        maxLines: 3,
+                        validator: (v) => v!.isEmpty ? 'Please enter a question.' : null,
+                        onSaved: (v) => _text = v!,
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Question Type Section
+                      _buildSectionHeader('Question Type'),
+                      const SizedBox(height: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: DropdownButtonFormField<QuestionType>(
+                          value: _type,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          items: QuestionType.values.map((type) {
+                            return DropdownMenuItem<QuestionType>(
+                              value: type,
+                              child: Text(_getTypeDisplayName(type)),
+                            );
+                          }).toList(),
+                          onChanged: (v) => setState(() {
+                            _type = v!;
+                            if (_type == QuestionType.trueFalse) {
+                              _options = ['True', 'False'];
+                              _correctAnswerIndex = 0;
+                            } else if (_type == QuestionType.shortAnswer) {
+                              _options = [];
+                              _correctAnswerIndex = 0;
+                            } else {
+                              _options = ['', '', '', ''];
+                              _correctAnswerIndex = 0;
+                            }
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Options Section (only for multiple choice)
+                      if (_type == QuestionType.multipleChoice) ...[
+                        _buildSectionHeader('Answer Options'),
+                        const SizedBox(height: 16),
+                        ..._buildOptionFields(),
+                        const SizedBox(height: 24),
+                        _buildSectionHeader('Correct Answer'),
+                        const SizedBox(height: 16),
+                        _buildCorrectAnswerSelector(),
+                      ] else if (_type == QuestionType.trueFalse) ...[
+                        _buildSectionHeader('Correct Answer'),
+                        const SizedBox(height: 16),
+                        _buildTrueFalseSelector(),
+                      ],
+                      const SizedBox(height: 80), // Space for save button
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  initialValue: _text,
-                  decoration: const InputDecoration(labelText: 'Question Text'),
-                  validator: (v) => v!.isEmpty ? 'Please enter text.' : null,
-                  onSaved: (v) => _text = v!,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<QuestionType>(
-                  value: _type,
-                  decoration: const InputDecoration(labelText: 'Question Type'),
-                  items: QuestionType.values.map((type) {
-                    return DropdownMenuItem(value: type, child: Text(type.name));
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _type = value!;
-                      _correctAnswerIndex = null;
-                      _optionControllers.forEach((c) => c.dispose());
-                      _optionControllers = [];
-                      if (_type == QuestionType.multipleChoice || _type == QuestionType.identification) {
-                         _optionControllers.add(TextEditingController());
-                         if(_type == QuestionType.multipleChoice) _optionControllers.add(TextEditingController());
-                      }
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                if (_type == QuestionType.multipleChoice)
-                  const Text('Options', style: TextStyle(fontWeight: FontWeight.bold)),
-                if (_type == QuestionType.multipleChoice)
-                  ..._buildMultipleChoiceOptions(),
-                if (_type == QuestionType.identification)
-                  ..._buildIdentificationOption(),
-                if (_type == QuestionType.trueOrFalse)
-                  ..._buildTrueFalseOptions(),
-              ],
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.save_alt_rounded, color: Colors.white),
+            label: const Text('Save Question', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            onPressed: _saveForm,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  List<Widget> _buildMultipleChoiceOptions() {
-    List<Widget> fields = [];
-    for (int i = 0; i < _optionControllers.length; i++) {
-      fields.add(
-        Row(
-          children: [
-            Radio<int>(
-              value: i,
-              groupValue: _correctAnswerIndex,
-              onChanged: (value) => setState(() => _correctAnswerIndex = value),
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+    );
+  }
+
+  String _getTypeDisplayName(QuestionType type) {
+    switch (type) {
+      case QuestionType.multipleChoice:
+        return 'Multiple Choice';
+      case QuestionType.trueFalse:
+        return 'True/False';
+      case QuestionType.shortAnswer:
+        return 'Short Answer';
+    }
+  }
+
+  List<Widget> _buildOptionFields() {
+    return List.generate(4, (index) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12.0),
+        child: TextFormField(
+          initialValue: index < _options.length ? _options[index] : '',
+          decoration: InputDecoration(
+            labelText: 'Option ${index + 1}',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
             ),
-            Expanded(
-              child: TextFormField(
-                controller: _optionControllers[i],
-                decoration: InputDecoration(labelText: 'Option ${i + 1}'),
-                validator: (v) => v!.isEmpty ? 'Enter option text.' : null,
-              ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
             ),
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline),
-              onPressed: () {
-                setState(() {
-                  if (_correctAnswerIndex == i) _correctAnswerIndex = null;
-                  _optionControllers[i].dispose();
-                  _optionControllers.removeAt(i);
-                });
-              },
-            ),
-          ],
+          ),
+          validator: (v) => (index < 2 && (v == null || v.isEmpty)) ? 'Please enter option ${index + 1}.' : null,
+          onSaved: (v) {
+            if (index >= _options.length) {
+              _options.add(v ?? '');
+            } else {
+              _options[index] = v ?? '';
+            }
+          },
         ),
       );
-    }
-    fields.add(
-      Align(
-        alignment: Alignment.centerRight,
-        child: TextButton.icon(
-          icon: const Icon(Icons.add), 
-          label: const Text('Add Option'),
-          onPressed: () => setState(() => _optionControllers.add(TextEditingController())),
-        ),
+    });
+  }
+
+  Widget _buildCorrectAnswerSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: List.generate(4, (index) {
+          return RadioListTile<int>(
+            title: Text('Option ${index + 1}'),
+            value: index,
+            groupValue: _correctAnswerIndex,
+            onChanged: (v) => setState(() => _correctAnswerIndex = v!),
+          );
+        }),
       ),
     );
-    return fields;
   }
 
-  List<Widget> _buildIdentificationOption() {
-    // For identification, we just need one text field for the correct answer.
-    return [
-      TextFormField(
-        controller: _optionControllers.isNotEmpty ? _optionControllers[0] : TextEditingController(),
-        decoration: const InputDecoration(labelText: 'Correct Answer'),
-        validator: (v) => v!.isEmpty ? 'Please enter the answer.' : null,
-        onChanged: (v) {
-          if (_optionControllers.isEmpty) {
-            _optionControllers.add(TextEditingController(text: v));
-          } else {
-            _optionControllers[0].text = v;
-          }
-        },
+  Widget _buildTrueFalseSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-    ];
-  }
-
-  List<Widget> _buildTrueFalseOptions() {
-    return [
-      RadioListTile<int>(
-        title: const Text('True'),
-        value: 0,
-        groupValue: _correctAnswerIndex,
-        onChanged: (value) => setState(() => _correctAnswerIndex = value),
+      child: Column(
+        children: [
+          RadioListTile<int>(
+            title: const Text('True'),
+            value: 0,
+            groupValue: _correctAnswerIndex,
+            onChanged: (v) => setState(() => _correctAnswerIndex = v!),
+          ),
+          RadioListTile<int>(
+            title: const Text('False'),
+            value: 1,
+            groupValue: _correctAnswerIndex,
+            onChanged: (v) => setState(() => _correctAnswerIndex = v!),
+          ),
+        ],
       ),
-      RadioListTile<int>(
-        title: const Text('False'),
-        value: 1,
-        groupValue: _correctAnswerIndex,
-        onChanged: (value) => setState(() => _correctAnswerIndex = value),
-      ),
-    ];
+    );
   }
 }

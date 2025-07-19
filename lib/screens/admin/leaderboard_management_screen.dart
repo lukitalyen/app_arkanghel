@@ -55,44 +55,84 @@ class LeaderboardManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Leaderboard Management'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _resetLeaderboard(context),
-            tooltip: 'Reset All Scores',
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: Column(
+        children: [
+          Expanded(
+            child: Consumer<LeaderboardService>(
+              builder: (context, leaderboardService, child) {
+                final entries = leaderboardService.leaderboard;
+                if (entries.isEmpty) {
+                  return const Center(child: Text('Leaderboard is empty.'));
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  itemCount: entries.length,
+                  itemBuilder: (context, index) {
+                    final entry = entries[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        leading: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: index == 0
+                              ? const Color(0xFFFDE68A)
+                              : index == 1
+                                  ? const Color(0xFFD1FAE5)
+                                  : index == 2
+                                      ? const Color(0xFFDBEAFE)
+                                      : const Color(0xFFF3F4F6),
+                          child: Text(
+                            entry.rank.toString(),
+                            style: TextStyle(
+                              color: index == 0
+                                  ? const Color(0xFFB45309)
+                                  : index == 1
+                                      ? const Color(0xFF059669)
+                                      : index == 2
+                                          ? const Color(0xFF2563EB)
+                                          : const Color(0xFF6B7280),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          entry.userName,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+                        ),
+                        subtitle: Text('Score: ${entry.score}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                          onPressed: () => _removeUser(context, entry.userId),
+                          tooltip: 'Remove',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
-      body: Consumer<LeaderboardService>(
-        builder: (context, leaderboardService, child) {
-          final entries = leaderboardService.leaderboard;
-          if (entries.isEmpty) {
-            return const Center(child: Text('Leaderboard is empty.'));
-          }
-
-          return ListView.builder(
-            itemCount: entries.length,
-            itemBuilder: (context, index) {
-              final entry = entries[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text(entry.rank.toString()),
-                  ),
-                  title: Text(entry.userName),
-                  subtitle: Text('Score: ${entry.score}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _removeUser(context, entry.userId),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _resetLeaderboard(context),
+        backgroundColor: const Color(0xFF2563EB),
+        child: const Icon(Icons.refresh, color: Colors.white),
+        tooltip: 'Reset All Scores',
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
