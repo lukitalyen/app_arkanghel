@@ -1,5 +1,6 @@
 import 'package:app_arkanghel/models/user.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
+import 'package:app_arkanghel/services/content_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +42,8 @@ class _AddEditUserScreenState extends State<AddEditUserScreen> {
       );
 
       if (widget.user == null) {
-        authService.addUser(userData);
+                final contentProvider = Provider.of<ContentService>(context, listen: false);
+        authService.addUser(userData, contentProvider.workstreams);
       } else {
         authService.updateUser(userData);
       }

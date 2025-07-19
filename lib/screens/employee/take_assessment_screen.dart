@@ -1,4 +1,5 @@
 import 'package:app_arkanghel/models/assessment.dart';
+import 'package:app_arkanghel/models/user.dart';
 import 'package:app_arkanghel/services/assessment_service.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
 import 'package:app_arkanghel/services/leaderboard_service.dart';
@@ -62,6 +63,14 @@ class _TakeAssessmentScreenState extends State<TakeAssessmentScreen> {
         authService.currentUser!.fullName,
         score,
       );
+      
+      // Save assessment result to user profile
+      final assessmentResult = AssessmentResult(
+        assessmentId: widget.assessment.id,
+        score: score,
+        dateTaken: DateTime.now(),
+      );
+      authService.addAssessmentResult(assessmentResult);
     }
     
     setState(() {

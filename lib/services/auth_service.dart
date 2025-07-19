@@ -1,4 +1,5 @@
 import 'package:app_arkanghel/models/user.dart';
+import 'package:app_arkanghel/models/workstream.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthService with ChangeNotifier {
@@ -97,10 +98,19 @@ class AuthService with ChangeNotifier {
 
   List<User> get users => _users;
 
-  Future<void> addUser(User user) async {
+    Future<void> addUser(User user, List<Workstream> allWorkstreams) async {
+    User newUser = user;
+    if (user.role == UserRole.employee) {
+      final publishedWorkstreamIds = allWorkstreams
+          .where((w) => w.isPublished)
+          .map((w) => w.id)
+          .take(5)
+          .toList();
+      newUser = user.copyWith(assignedWorkstreamIds: publishedWorkstreamIds);
+    }
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 300));
-    _users.add(user);
+        _users.add(newUser);
     notifyListeners();
   }
 
@@ -128,7 +138,9 @@ class AuthService with ChangeNotifier {
 
   void markChapterAsComplete(String chapterId) {
     if (_currentUser != null && !_currentUser!.completedChapterIds.contains(chapterId)) {
-      _currentUser!.completedChapterIds.add(chapterId);
+      final updatedChapterIds = List<String>.from(_currentUser!.completedChapterIds);
+      updatedChapterIds.add(chapterId);
+      _currentUser = _currentUser!.copyWith(completedChapterIds: updatedChapterIds);
       // Also update the user in the main list to persist the change across sessions (in this mock setup)
       final index = _users.indexWhere((u) => u.id == _currentUser!.id);
       if (index != -1) {
@@ -140,7 +152,9 @@ class AuthService with ChangeNotifier {
 
   void addAssessmentResult(AssessmentResult result) {
     if (_currentUser != null) {
-      _currentUser!.assessmentResults.add(result);
+      final updatedResults = List<AssessmentResult>.from(_currentUser!.assessmentResults);
+      updatedResults.add(result);
+      _currentUser = _currentUser!.copyWith(assessmentResults: updatedResults);
       final index = _users.indexWhere((u) => u.id == _currentUser!.id);
       if (index != -1) {
         _users[index] = _currentUser!;

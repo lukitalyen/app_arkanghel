@@ -72,4 +72,19 @@ class LeaderboardService with ChangeNotifier {
     final entry = getUserEntry(userId);
     return entry?.rank ?? 0;
   }
+
+  void updateScore(String userId, double newScore) {
+    final index = _leaderboard.indexWhere((entry) => entry.userId == userId);
+    if (index != -1) {
+      final entry = _leaderboard[index];
+      _leaderboard[index] = LeaderboardEntry(
+        userId: entry.userId,
+        userName: entry.userName,
+        score: newScore,
+        rank: entry.rank,
+      );
+      _updateRanks();
+      notifyListeners();
+    }
+  }
 }

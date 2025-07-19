@@ -157,6 +157,29 @@ class _AddEditAssessmentScreenState extends State<AddEditAssessmentScreen> {
                       color: Color(0xFF1E293B),
                     ),
                   ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: ElevatedButton(
+                      onPressed: _saveForm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -198,7 +221,7 @@ class _AddEditAssessmentScreenState extends State<AddEditAssessmentScreen> {
                       ),
                       const SizedBox(height: 16),
                       _buildQuestionsList(),
-                      const SizedBox(height: 80), // Space for save button
+                      const SizedBox(height: 24), // Bottom padding
                     ],
                   ),
                 ),
@@ -207,23 +230,6 @@ class _AddEditAssessmentScreenState extends State<AddEditAssessmentScreen> {
           ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.save_alt_rounded, color: Colors.white),
-            label: const Text('Save Assessment', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-            onPressed: _saveForm,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 

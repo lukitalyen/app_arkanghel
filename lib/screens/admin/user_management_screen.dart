@@ -35,6 +35,19 @@ class UserManagementScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthService>(context, listen: false);
     final allWorkstreams = contentProvider.workstreams;
     final assignedIds = List<String>.from(user.assignedWorkstreamIds);
+    // Ensure all employees have at least 5 published workstreams assigned by default
+    if (user.role == UserRole.employee && assignedIds.length < 5) {
+      final publishedIds = allWorkstreams
+          .where((w) => w.isPublished)
+          .map((w) => w.id)
+          .take(5)
+          .toList();
+      for (final id in publishedIds) {
+        if (!assignedIds.contains(id)) {
+          assignedIds.add(id);
+        }
+      }
+    }
 
     showDialog(
       context: context,

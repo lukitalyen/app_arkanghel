@@ -60,17 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 50),
                   Image.asset('assets/logo.png', height: 80),
                   const SizedBox(height: 40),
-                  const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Please use your Aboitiz email and password to login',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 40),
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -94,7 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureText ? Icons.visibility_off : Icons.visibility,
+                          _obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
                         onPressed: () {
                           setState(() {
@@ -114,7 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: context.watch<AuthService>().isLoading ? null : _login,
+                      onPressed: context.watch<AuthService>().isLoading
+                          ? null
+                          : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -126,11 +119,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text(
                               'Login',
-                              style: TextStyle(fontSize: 18, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
                             ),
                     ),
                   ),
