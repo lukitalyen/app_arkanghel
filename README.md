@@ -143,4 +143,6 @@ If you encounter any issues or have questions, please file an issue on the proje
 
 This project is maintained by student developers. We welcome contributions from the community. Please feel free to fork the repository and submit a pull request.
 
-
+## TEAM MEMBERS
+Alvarez, Allyza Marie L.
+De Villa, Jan Allen C.
