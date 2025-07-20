@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:app_arkanghel/models/user.dart';
-import 'package:app_arkanghel/screens/admin/main_admin_screen.dart';
-import 'package:app_arkanghel/screens/employee/main_employee_screen.dart';
+
+import 'package:app_arkanghel/screens/splash_screen.dart';
 import 'package:app_arkanghel/screens/login_screen.dart';
 import 'package:app_arkanghel/services/assessment_service.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
@@ -22,10 +21,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => AssessmentService()),
-        ChangeNotifierProvider(create: (_) => LeaderboardService()),
-        ChangeNotifierProvider(create: (_) => ContentService()),
+        ChangeNotifierProvider(create: (context) => AuthService()),
+        ChangeNotifierProvider(create: (context) => ContentService()),
+        ChangeNotifierProvider(create: (context) => AssessmentService()),
+        ChangeNotifierProxyProvider2<
+          AuthService,
+          ContentService,
+          LeaderboardService
+        >(
+          create: (context) => LeaderboardService(
+            Provider.of<AuthService>(context, listen: false),
+            Provider.of<ContentService>(context, listen: false),
+          ),
+          update: (context, auth, content, leaderboard) =>
+              LeaderboardService(auth, content),
+        ),
       ],
       child: Consumer<AuthService>(
         builder: (context, auth, child) {
@@ -36,15 +46,33 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
               visualDensity: VisualDensity.adaptivePlatformDensity,
+              dialogTheme: const DialogThemeData(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                ),
+                elevation: 8,
+                titleTextStyle: TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                contentTextStyle: TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 16,
+                ),
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B82F6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
             ),
-            home: auth.currentUser == null
-                ? const LoginScreen()
-                : auth.currentUser!.role == UserRole.admin
-                    ? const MainAdminScreen()
-                    : const MainEmployeeScreen(),
-            routes: {
-              '/login': (context) => const LoginScreen(),
-            },
+            home: const SplashScreen(),
+            routes: {'/login': (context) => const LoginScreen()},
           );
         },
       ),

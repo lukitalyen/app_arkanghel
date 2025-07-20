@@ -31,7 +31,52 @@ class WorkstreamManagementScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   itemCount: workstreams.length,
                   itemBuilder: (context, index) {
-                    return _buildWorkstreamCard(context, workstreams[index]);
+                    final workstream = workstreams[index];
+                    final contentService = Provider.of<ContentService>(context, listen: false);
+
+                    return Dismissible(
+                      key: ValueKey(workstream.id),
+                      direction: DismissDirection.endToStart,
+                      confirmDismiss: (direction) async {
+                        return await showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Confirm Deletion'),
+                            content: Text(
+                                'Are you sure you want to delete "${workstream.title}"? This cannot be undone.'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                              ),
+                              TextButton(
+                                child: const Text('Delete'),
+                                onPressed: () {
+                                  Navigator.of(ctx).pop(true);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      onDismissed: (direction) {
+                        contentService.deleteWorkstream(workstream.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('"${workstream.title}" deleted.')),
+                        );
+                      },
+                      background: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444), // Red
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        alignment: Alignment.centerRight,
+                        child: const Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 30),
+                      ),
+                      child: _buildWorkstreamCard(context, workstream),
+                    );
                   },
                 );
         },

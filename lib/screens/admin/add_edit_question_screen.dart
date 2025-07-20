@@ -16,6 +16,7 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
   late QuestionType _type;
   late List<String> _options;
   late int _correctAnswerIndex;
+  late String? _correctAnswer;
 
   @override
   void initState() {
@@ -24,6 +25,7 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
     _type = widget.question?.type ?? QuestionType.multipleChoice;
     _options = List<String>.from(widget.question?.options ?? ['', '', '', '']);
     _correctAnswerIndex = widget.question?.correctAnswerIndex ?? 0;
+    _correctAnswer = widget.question?.correctAnswer;
   }
 
   void _saveForm() {
@@ -46,6 +48,7 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
         type: _type,
         options: finalOptions,
         correctAnswerIndex: _correctAnswerIndex,
+        correctAnswer: _correctAnswer,
       );
       Navigator.of(context).pop(newQuestion);
     }
@@ -163,6 +166,27 @@ class _AddEditQuestionScreenState extends State<AddEditQuestionScreen> {
                         _buildSectionHeader('Correct Answer'),
                         const SizedBox(height: 16),
                         _buildTrueFalseSelector(),
+                      ] else if (_type == QuestionType.shortAnswer) ...[
+                        _buildSectionHeader('Correct Answer'),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          initialValue: _correctAnswer,
+                          decoration: InputDecoration(
+                            labelText: 'Correct Answer',
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                          ),
+                          validator: (v) => v!.isEmpty ? 'Please enter the correct answer.' : null,
+                          onSaved: (v) => _correctAnswer = v,
+                        ),
                       ],
                       const SizedBox(height: 80), // Space for save button
                     ],

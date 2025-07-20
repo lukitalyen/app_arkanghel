@@ -24,8 +24,7 @@ class AppDrawer extends StatelessWidget {
             iconColor: Colors.grey[600],
           ),
         ),
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
@@ -35,10 +34,14 @@ class AppDrawer extends StatelessWidget {
                 child: Image.asset('assets/logo.png'),
               ),
             ),
-            if (userRole == UserRole.admin)
-              ..._buildAdminMenuItems(context, selectedIndex)
-            else
-              ..._buildEmployeeMenuItems(context, selectedIndex),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: userRole == UserRole.admin
+                    ? _buildAdminMenuItems(context, selectedIndex)
+                    : _buildEmployeeMenuItems(context, selectedIndex),
+              ),
+            ),
             const Divider(),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.grey[600]),
@@ -96,13 +99,13 @@ class AppDrawer extends StatelessWidget {
       ),
       _DrawerMenuItem(
         icon: Icons.work,
-        title: 'Workstreams',
+        title: 'Workstream Management',
         isSelected: selectedIndex == 2,
         onTap: () => onItemTapped(2),
       ),
       _DrawerMenuItem(
         icon: Icons.assignment,
-        title: 'Assessments',
+        title: 'Assessment Management',
         isSelected: selectedIndex == 3,
         onTap: () => onItemTapped(3),
       ),
@@ -131,7 +134,7 @@ class AppDrawer extends StatelessWidget {
       ),
       _DrawerMenuItem(
         icon: Icons.assignment,
-        title: 'Assessments',
+        title: 'Assessment Management',
         isSelected: selectedIndex == 2,
         onTap: () => onItemTapped(2),
       ),

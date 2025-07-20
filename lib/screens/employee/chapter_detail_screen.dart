@@ -1,9 +1,16 @@
+import 'dart:io';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+
 import 'package:app_arkanghel/models/chapter.dart';
 import 'package:app_arkanghel/services/auth_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+
 
 class ChapterDetailScreen extends StatefulWidget {
   final Chapter chapter;
@@ -38,11 +45,14 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       });
       
       try {
-        // For demo purposes, we'll use a network video
-        // In a real app, you'd handle local files differently
-        _videoController = VideoPlayerController.networkUrl(
-          Uri.parse(widget.chapter.videoUrl!),
-        );
+        final videoUrl = widget.chapter.videoUrl!;
+        final uri = Uri.parse(videoUrl);
+
+        if (uri.isAbsolute && !uri.isScheme('file')) {
+          _videoController = VideoPlayerController.networkUrl(uri);
+        } else {
+          _videoController = VideoPlayerController.file(File(videoUrl));
+        }
         
         await _videoController!.initialize();
         
@@ -60,7 +70,82 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
     }
   }
 
+  Widget _buildVideoPlayer() {
+    return Container(
+      width: double.infinity,
+      height: 250, // Adjusted height for better fit
+      color: Colors.black,
+      child: _isVideoLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            )
+          : _videoController != null && _isVideoInitialized
+              ? Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _videoController!.value.aspectRatio,
+                      child: VideoPlayer(_videoController!),
+                    ),
+                    // Play/Pause button
+                    IconButton(
+                      iconSize: 64,
+                      icon: Icon(
+                        _videoController!.value.isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _videoController!.value.isPlaying
+                              ? _videoController!.pause()
+                              : _videoController!.play();
+                        });
+                      },
+                    ),
+                  ],
+                )
+              : const Center(
+                  child: Text(
+                    'Video not available',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+    );
+  }
 
+  Widget _buildPdfViewer() {
+    final pdfUrl = widget.chapter.pdfUrl!;
+    final uri = Uri.parse(pdfUrl);
+
+    return Container(
+      width: double.infinity,
+      height: 500, // Adjusted height for PDFs
+      color: Colors.grey[200],
+      child: uri.isAbsolute && !uri.isScheme('file')
+          ? WebViewWidget(
+              controller: WebViewController()
+                ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..loadRequest(Uri.parse(
+                    'https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(pdfUrl)}')), 
+            )
+          : PDFView(
+              filePath: pdfUrl,
+              enableSwipe: true,
+              swipeHorizontal: false,
+              autoSpacing: false,
+              pageFling: false,
+              gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                Factory<EagerGestureRecognizer>(
+                  () => EagerGestureRecognizer(),
+                ),
+              },
+            ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,352 +159,127 @@ class _ChapterDetailScreenState extends State<ChapterDetailScreen> {
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         foregroundColor: const Color(0xFF1E293B),
-        title: Text(
-          widget.chapter.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+      ),
+      body: SlidingUpPanel(
+        minHeight: 220, 
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24.0),
+          topRight: Radius.circular(24.0),
+        ),
+        panel: _buildPanel(isCompleted, authService),
+        body: _buildPanelBody(hasVideo, hasPdf),
+      ),
+    );
+  }
+
+  Widget _buildPanel(bool isCompleted, AuthService authService) {
+    return Column(
+      children: [
+        // Grabber
+        Container(
+          width: 40,
+          height: 5,
+          margin: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: isCompleted ? const Color(0xFFD1FAE5) : const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              isCompleted ? 'Complete' : 'Pending',
-              style: TextStyle(
-                color: isCompleted ? const Color(0xFF059669) : const Color(0xFF92400E),
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildListDelegate([
-              // Header section
-              Container(
-                width: double.infinity,
-                color: Colors.white,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.chapter.description,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                        height: 1.4,
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Chapter Info
+                  Text(
+                    widget.chapter.title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Learning Module',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Description
+                  const Text(
+                    'Chapter Description',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.chapter.description,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isCompleted
+                          ? null
+                          : () {
+                              authService.markChapterAsComplete(widget.chapter.id);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isCompleted
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFF1E40AF),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        if (hasVideo) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.play_circle_outline,
-                                  size: 16,
-                                  color: Color(0xFF1E40AF),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text(
-                                  'Video Available',
-                                  style: TextStyle(
-                                    color: Color(0xFF1E40AF),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        if (hasPdf) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF2F2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.picture_as_pdf_outlined,
-                                  size: 16,
-                                  color: Color(0xFFDC2626),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text(
-                                  'PDF Available',
-                                  style: TextStyle(
-                                    color: Color(0xFFDC2626),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Content section
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (hasVideo || hasPdf) ...[
-                      const Text(
-                        'Learning Materials',
-                        style: TextStyle(
-                          fontSize: 18,
+                      child: Text(
+                        isCompleted ? 'Completed' : 'Mark as Complete',
+                        style: const TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    if (hasVideo) ...[
-                      // Embedded Video Player
-                      Container(
-                        width: double.infinity,
-                        height: 200,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: _isVideoLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : _videoController != null && _isVideoInitialized
-                                  ? Stack(
-                                      children: [
-                                        AspectRatio(
-                                          aspectRatio: _videoController!.value.aspectRatio,
-                                          child: VideoPlayer(_videoController!),
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          left: 0,
-                                          right: 0,
-                                          child: VideoProgressIndicator(
-                                            _videoController!,
-                                            allowScrubbing: true,
-                                            colors: const VideoProgressColors(
-                                              playedColor: Color(0xFF1E40AF),
-                                              bufferedColor: Colors.grey,
-                                              backgroundColor: Colors.black26,
-                                            ),
-                                          ),
-                                        ),
-                                        Center(
-                                          child: IconButton(
-                                            iconSize: 64,
-                                            icon: Icon(
-                                              _videoController!.value.isPlaying
-                                                  ? Icons.pause_circle_filled
-                                                  : Icons.play_circle_filled,
-                                              color: Colors.white.withOpacity(0.8),
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                _videoController!.value.isPlaying
-                                                    ? _videoController!.pause()
-                                                    : _videoController!.play();
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            const Color(0xFF1E40AF),
-                                            const Color(0xFF3B82F6),
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.video_library_outlined,
-                                              size: 48,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(height: 8),
-                                            Text(
-                                              'Video content unavailable',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                        ),
-                      ),
-                    ],
-                    if (hasPdf) ...[
-                      // Embedded PDF Viewer
-                      Container(
-                        width: double.infinity,
-                        height: 400,
-                        margin: const EdgeInsets.only(bottom: 24),
-                        decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: widget.chapter.pdfUrl != null && widget.chapter.pdfUrl!.isNotEmpty
-                              ? WebViewWidget(
-                                  controller: WebViewController()
-                                    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-                                    ..loadRequest(
-                                      Uri.parse(
-                                        'https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(widget.chapter.pdfUrl!)}',
-                                      ),
-                                    ),
-                                )
-                              : Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        const Color(0xFFDC2626),
-                                        const Color(0xFFEF4444),
-                                      ],
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.picture_as_pdf_outlined,
-                                          size: 48,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          'PDF content unavailable',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ]),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isCompleted
-                          ? const Color(0xFF059669)
-                          : const Color(0xFF1E40AF),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    onPressed: isCompleted
-                        ? null
-                        : () {
-                            authService.markChapterAsComplete(widget.chapter.id);
-                          },
-                    child: Text(
-                      isCompleted ? 'Chapter Completed ✓' : 'Mark as Complete',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildPanelBody(bool hasVideo, bool hasPdf) {
+    if (hasVideo) {
+      return _buildVideoPlayer();
+    } else if (hasPdf) {
+      return _buildPdfViewer();
+    } else {
+      return const Center(child: Text('No learning material available.'));
+    }
   }
 }

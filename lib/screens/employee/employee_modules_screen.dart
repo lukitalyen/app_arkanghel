@@ -4,8 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:app_arkanghel/screens/employee/workstream_detail_screen.dart';
 
-class EmployeeModulesScreen extends StatelessWidget {
+class EmployeeModulesScreen extends StatefulWidget {
   const EmployeeModulesScreen({super.key});
+
+  @override
+  State<EmployeeModulesScreen> createState() => _EmployeeModulesScreenState();
+}
+
+class _EmployeeModulesScreenState extends State<EmployeeModulesScreen> {
+  int _selectedFilter = 0; // 0 = All, 1 = Ongoing, 2 = Completed
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +26,58 @@ class EmployeeModulesScreen extends StatelessWidget {
 
     final assignedWorkstreams = contentService.getWorkstreamsForUser(user);
 
+    // Filtering logic
+    List filteredWorkstreams;
+    if (_selectedFilter == 1) {
+      filteredWorkstreams = assignedWorkstreams.where((ws) => contentService.getWorkstreamProgress(user, ws) < 1.0).toList();
+    } else if (_selectedFilter == 2) {
+      filteredWorkstreams = assignedWorkstreams.where((ws) => contentService.getWorkstreamProgress(user, ws) >= 1.0).toList();
+    } else {
+      filteredWorkstreams = assignedWorkstreams;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    _buildFilterChip(
+                      icon: Icons.apps,
+                      label: 'All',
+                      selected: _selectedFilter == 0,
+                      color: const Color(0xFF38BDF8),
+                      onTap: () => setState(() => _selectedFilter = 0),
+                    ),
+                    const SizedBox(width: 16),
+                    _buildFilterChip(
+                      icon: Icons.local_fire_department,
+                      label: 'Ongoing',
+                      selected: _selectedFilter == 1,
+                      color: const Color(0xFFF59E0B),
+                      onTap: () => setState(() => _selectedFilter = 1),
+                    ),
+                    const SizedBox(width: 16),
+                    _buildFilterChip(
+                      icon: Icons.check_box_outlined,
+                      label: 'Completed',
+                      selected: _selectedFilter == 2,
+                      color: const Color(0xFF6366F1),
+                      onTap: () => setState(() => _selectedFilter = 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             // Content
             Expanded(
-              child: assignedWorkstreams.isEmpty
+              child: filteredWorkstreams.isEmpty
                   ? Center(
                       child: Container(
                         padding: const EdgeInsets.all(32),
@@ -71,9 +122,9 @@ class EmployeeModulesScreen extends StatelessWidget {
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.all(20),
-                      itemCount: assignedWorkstreams.length,
+                      itemCount: filteredWorkstreams.length,
                       itemBuilder: (context, index) {
-                        final workstream = assignedWorkstreams[index];
+                        final workstream = filteredWorkstreams[index];
                         final progress = contentService.getWorkstreamProgress(
                           user,
                           workstream,
@@ -210,6 +261,8 @@ class EmployeeModulesScreen extends StatelessWidget {
                                       children: [
                                         Text(
                                           workstream.title,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -312,4 +365,56 @@ class EmployeeModulesScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildFilterChip({
+    required IconData icon,
+    required String label,
+    required bool selected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? color.withOpacity(0.15) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: selected ? color : Colors.transparent,
+            width: selected ? 2 : 1,
+          ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.13),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: selected ? color : color.withOpacity(0.12),
+              child: Icon(icon, color: Colors.white, size: 16),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? color : Colors.grey[700],
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

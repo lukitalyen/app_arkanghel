@@ -7,29 +7,6 @@ import 'package:provider/provider.dart';
 class UserManagementScreen extends StatelessWidget {
   const UserManagementScreen({super.key});
 
-  void _deleteUser(BuildContext context, String userId) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Are you sure?'),
-        content: const Text('Do you want to remove this user?'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('No'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          TextButton(
-            child: const Text('Yes'),
-            onPressed: () {
-              Provider.of<AuthService>(context, listen: false).deleteUser(userId);
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showConfigureWorkstreamsDialog(BuildContext context, User user) {
     final contentProvider = Provider.of<ContentService>(context, listen: false);
     final authProvider = Provider.of<AuthService>(context, listen: false);
@@ -121,19 +98,67 @@ class UserManagementScreen extends StatelessWidget {
             children: [
               _buildHeader(),
               Expanded(
-                child: ListView.separated(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: authService.users.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
                   itemBuilder: (context, index) {
                     final user = authService.users[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      child: Row(
-                        children: [
-                          _buildUserInfoCell(user, 6),
-                          _buildRoleCell(context, authService, user, 4),
-                          _buildAccessCell(context, user, 3),
-                        ],
+                    return Dismissible(
+                      key: Key(user.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade400,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(Icons.delete, color: Colors.white, size: 28),
+                      ),
+                      confirmDismiss: (direction) async {
+                        bool? shouldDelete = await showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Are you sure?'),
+                            content: const Text('Do you want to remove this user?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('No'),
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                              ),
+                              TextButton(
+                                child: const Text('Yes'),
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                              ),
+                            ],
+                          ),
+                        );
+                        return shouldDelete == true;
+                      },
+                      onDismissed: (direction) {
+                        Provider.of<AuthService>(context, listen: false).deleteUser(user.id);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            _buildUserInfoCell(user, 5),
+                            _buildRoleCell(context, authService, user, 4),
+                            _buildAccessCell(context, user, 3),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -153,7 +178,7 @@ class UserManagementScreen extends StatelessWidget {
         children: [
           _buildHeaderCell('Name', 6),
           _buildHeaderCell('Role', 4, alignment: TextAlign.center),
-          _buildHeaderCell('Access', 3, alignment: TextAlign.center),
+          _buildHeaderCell('Access', 3, alignment: TextAlign.right),
         ],
       ),
     );
@@ -162,14 +187,17 @@ class UserManagementScreen extends StatelessWidget {
   Widget _buildHeaderCell(String text, int flex, {TextAlign alignment = TextAlign.start}) {
     return Expanded(
       flex: flex,
-      child: Text(
-        text.toUpperCase(),
-        textAlign: alignment,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-          color: Color(0xFF6B7280),
-          letterSpacing: 0.5,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: Text(
+          text.toUpperCase(),
+          textAlign: alignment,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            color: Color(0xFF6B7280),
+            letterSpacing: 0.5,
+          ),
         ),
       ),
     );
@@ -191,13 +219,10 @@ class UserManagementScreen extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(user.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text(user.email, style: const TextStyle(color: Colors.grey), overflow: TextOverflow.ellipsis),
-              ],
+            child: Text(
+              user.fullName,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -223,14 +248,14 @@ class UserManagementScreen extends StatelessWidget {
           child: DropdownButton<UserRole>(
             value: user.role,
             isExpanded: true,
-            icon: Icon(Icons.unfold_more, color: textColor, size: 20),
+            icon: Icon(Icons.unfold_more_rounded, color: textColor, size: 20),
             items: UserRole.values.map((role) {
               return DropdownMenuItem(
                 value: role,
                 child: Center(
                   child: Text(
                     role.name,
-                    style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
+                    style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -251,23 +276,14 @@ class UserManagementScreen extends StatelessWidget {
   Widget _buildAccessCell(BuildContext context, User user, int flex) {
     return Expanded(
       flex: flex,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B7280), size: 22),
-            onPressed: () => _showConfigureWorkstreamsDialog(context, user),
-            splashRadius: 24,
-            tooltip: 'Configure Workstreams',
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 22),
-            onPressed: () => _deleteUser(context, user.id),
-            splashRadius: 24,
-            tooltip: 'Delete User',
-          ),
-        ],
+      child: Center(
+        child: IconButton(
+          icon: const Icon(Icons.settings_outlined, color: Color(0xFF4B5563), size: 20),
+          onPressed: () => _showConfigureWorkstreamsDialog(context, user),
+          tooltip: 'Configure Workstreams',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+        ),
       ),
     );
   }

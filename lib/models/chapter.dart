@@ -4,6 +4,8 @@ class Chapter {
   final String description;
   final String? videoUrl;
   final String? pdfUrl;
+  final String? videoFileName;
+  final String? pdfFileName;
 
   Chapter({
     required this.id,
@@ -11,5 +13,7 @@ class Chapter {
     required this.description,
     this.videoUrl,
     this.pdfUrl,
+    this.videoFileName,
+    this.pdfFileName,
   });
 }

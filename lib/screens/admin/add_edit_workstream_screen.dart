@@ -37,8 +37,10 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
   void _saveWorkstream() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final contentService =
-          Provider.of<ContentService>(context, listen: false);
+      final contentService = Provider.of<ContentService>(
+        context,
+        listen: false,
+      );
       if (widget.workstream == null) {
         contentService.addWorkstream(
           Workstream(
@@ -101,7 +103,9 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
         title: Text(
           widget.workstream == null ? 'Create Workstream' : 'Edit Workstream',
           style: const TextStyle(
-              color: Color(0xFF111827), fontWeight: FontWeight.bold),
+            color: Color(0xFF111827),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           Padding(
@@ -115,9 +119,13 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
               ),
-              child: const Text('Save',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Save',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -130,15 +138,17 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _buildTextField(
-                  label: 'Title',
-                  initialValue: _title,
-                  onSaved: (v) => _title = v!),
+                label: 'Title',
+                initialValue: _title,
+                onSaved: (v) => _title = v!,
+              ),
               const SizedBox(height: 20),
               _buildTextField(
-                  label: 'Description',
-                  initialValue: _description,
-                  onSaved: (v) => _description = v!,
-                  maxLines: 4),
+                label: 'Description',
+                initialValue: _description,
+                onSaved: (v) => _description = v!,
+                maxLines: 4,
+              ),
               const SizedBox(height: 20),
               _buildPublishedSwitch(),
               const SizedBox(height: 30),
@@ -150,19 +160,23 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
     );
   }
 
-  Widget _buildTextField(
-      {required String label,
-      required String initialValue,
-      required Function(String?) onSaved,
-      int maxLines = 1}) {
+  Widget _buildTextField({
+    required String label,
+    required String initialValue,
+    required Function(String?) onSaved,
+    int maxLines = 1,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF374151))),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF374151),
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           initialValue: initialValue,
@@ -202,11 +216,14 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Published',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF374151))),
+          const Text(
+            'Published',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF374151),
+            ),
+          ),
           Switch(
             value: _isPublished,
             onChanged: (value) => setState(() => _isPublished = value),
@@ -224,17 +241,24 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Chapters',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827))),
+            const Text(
+              'Chapters',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
+              ),
+            ),
             TextButton.icon(
               onPressed: () => _showChapterDialog(),
               icon: const Icon(Icons.add, color: Color(0xFF2563EB)),
-              label: const Text('Add Chapter',
-                  style: TextStyle(
-                      color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+              label: const Text(
+                'Add Chapter',
+                style: TextStyle(
+                  color: Color(0xFF2563EB),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -267,14 +291,19 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
         children: [
           Icon(Icons.list_alt_outlined, size: 48, color: Color(0xFF9CA3AF)),
           SizedBox(height: 16),
-          Text('No Chapters',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF4B5563))),
+          Text(
+            'No Chapters',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4B5563),
+            ),
+          ),
           SizedBox(height: 4),
-          Text('Add chapters to build your workstream',
-              style: TextStyle(color: Color(0xFF6B7280))),
+          Text(
+            'Add chapters to build your workstream',
+            style: TextStyle(color: Color(0xFF6B7280)),
+          ),
         ],
       ),
     );
@@ -304,16 +333,21 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(chapter.title,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151))),
+                Text(
+                  chapter.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(chapter.description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Color(0xFF6B7280))),
+                Text(
+                  chapter.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF6B7280)),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -324,7 +358,8 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
                         chapter.videoUrl != null &&
                         chapter.videoUrl!.isNotEmpty)
                       const SizedBox(width: 8),
-                    if (chapter.videoUrl != null && chapter.videoUrl!.isNotEmpty)
+                    if (chapter.videoUrl != null &&
+                        chapter.videoUrl!.isNotEmpty)
                       _buildFileChip(Icons.videocam, 'Video'),
                   ],
                 ),
@@ -332,12 +367,13 @@ class _AddEditWorkstreamScreenState extends State<AddEditWorkstreamScreen> {
             ),
           ),
           IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
-              onPressed: () =>
-                  _showChapterDialog(chapter: chapter, index: index)),
+            icon: const Icon(Icons.edit_outlined, color: Color(0xFF6B7280)),
+            onPressed: () => _showChapterDialog(chapter: chapter, index: index),
+          ),
           IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              onPressed: () => setState(() => _chapters.removeAt(index))),
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            onPressed: () => setState(() => _chapters.removeAt(index)),
+          ),
         ],
       ),
     );
@@ -386,8 +422,10 @@ class __ChapterDialogState extends State<_ChapterDialog> {
   late String _chapterDescription;
   File? _pickedPdf;
   String? _initialPdfUrl;
+  String? _pdfFileName;
   File? _pickedVideo;
   String? _initialVideoUrl;
+  String? _videoFileName;
 
   @override
   void initState() {
@@ -396,39 +434,50 @@ class __ChapterDialogState extends State<_ChapterDialog> {
     _chapterDescription = widget.chapter?.description ?? '';
     _initialPdfUrl = widget.chapter?.pdfUrl;
     _initialVideoUrl = widget.chapter?.videoUrl;
+    _pdfFileName = widget.chapter?.pdfFileName;
+    _videoFileName = widget.chapter?.videoFileName;
   }
 
-  Future<void> _pickFile(FileType type, {required Function(File) onFilePicked}) async {
+  Future<void> _pickFile(
+    FileType type, {
+    required Function(File, String) onFilePicked,
+  }) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: type,
-      allowedExtensions: type == FileType.custom ? ['pdf'] : null,
+      allowedExtensions: (type == FileType.custom) ? ['pdf'] : null,
     );
 
     if (result != null) {
-      setState(() {
-        onFilePicked(File(result.files.single.path!));
-      });
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+      onFilePicked(file, fileName);
     }
+  }
+
+  Widget _buildFileInfo(String? fileName) {
+    if (fileName == null || fileName.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Text(
+        'File: $fileName',
+        style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 
   void _saveChapter() {
     if (_chapterFormKey.currentState!.validate()) {
       _chapterFormKey.currentState!.save();
 
-      // Simulate file upload by creating a path. In a real app, you'd upload to a server.
-      final pdfUrl = _pickedPdf != null
-          ? 'uploads/pdfs/${DateTime.now().millisecondsSinceEpoch}.pdf'
-          : _initialPdfUrl;
-      final videoUrl = _pickedVideo != null
-          ? 'uploads/videos/${DateTime.now().millisecondsSinceEpoch}.mp4'
-          : _initialVideoUrl;
-
       final newChapter = Chapter(
         id: widget.chapter?.id ?? DateTime.now().toString(),
         title: _chapterTitle,
         description: _chapterDescription,
-        pdfUrl: pdfUrl,
-        videoUrl: videoUrl,
+        pdfUrl: _pickedPdf?.path ?? _initialPdfUrl,
+        videoUrl: _pickedVideo?.path ?? _initialVideoUrl,
+        pdfFileName: _pdfFileName,
+        videoFileName: _videoFileName,
       );
       widget.onSave(newChapter);
       Navigator.of(context).pop();
@@ -458,7 +507,11 @@ class __ChapterDialogState extends State<_ChapterDialog> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    Icon(Icons.menu_book_rounded, color: Colors.white, size: 40),
+                    Icon(
+                      Icons.menu_book_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       isEdit ? 'Edit Chapter' : 'Add Chapter',
@@ -473,7 +526,10 @@ class __ChapterDialogState extends State<_ChapterDialog> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: Form(
                   key: _chapterFormKey,
                   child: Column(
@@ -520,79 +576,105 @@ class __ChapterDialogState extends State<_ChapterDialog> {
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _pickFile(FileType.custom, onFilePicked: (file) => _pickedPdf = file),
-                              icon: const Icon(Icons.picture_as_pdf, color: Color(0xFFB91C1C)),
-                              label: Text(_pickedPdf != null
-                                  ? 'PDF Selected'
-                                  : (_initialPdfUrl != null && _initialPdfUrl!.isNotEmpty
-                                      ? 'Change PDF'
-                                      : 'Upload PDF')),
+                              onPressed: () => _pickFile(
+                                FileType.custom,
+                                onFilePicked: (file, fileName) {
+                                  setState(() {
+                                    _pickedPdf = file;
+                                    _pdfFileName = fileName;
+                                  });
+                                },
+                              ),
+                              icon: const Icon(
+                                Icons.picture_as_pdf,
+                                color: Color(0xFFB91C1C),
+                              ),
+                              label: Text(
+                                _pickedPdf != null
+                                    ? 'PDF Selected'
+                                    : (_pdfFileName != null &&
+                                              _pdfFileName!.isNotEmpty
+                                          ? 'Change PDF'
+                                          : 'Select PDF'),
+                              ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _pickedPdf != null || (_initialPdfUrl != null && _initialPdfUrl!.isNotEmpty)
+                                backgroundColor:
+                                    _pickedPdf != null ||
+                                        (_initialPdfUrl != null &&
+                                            _initialPdfUrl!.isNotEmpty)
                                     ? const Color(0xFFDCFCE7)
                                     : const Color(0xFFF3F4F6),
-                                foregroundColor: _pickedPdf != null || (_initialPdfUrl != null && _initialPdfUrl!.isNotEmpty)
+                                foregroundColor:
+                                    _pickedPdf != null ||
+                                        (_initialPdfUrl != null &&
+                                            _initialPdfUrl!.isNotEmpty)
                                     ? const Color(0xFF166534)
                                     : const Color(0xFF374151),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      if (_pickedPdf != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text('File: ${_pickedPdf!.path.split('/').last}', style: const TextStyle(fontSize: 12, color: Color(0xFF166534))),
-                        ),
-                      if (_pickedPdf == null && _initialPdfUrl != null && _initialPdfUrl!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text('Current File: ${_initialPdfUrl!.split('/').last}', style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB))),
-                        ),
+                      _buildFileInfo(_pdfFileName),
                       const SizedBox(height: 14),
                       Row(
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _pickFile(FileType.video, onFilePicked: (file) => _pickedVideo = file),
-                              icon: const Icon(Icons.videocam, color: Color(0xFF92400E)),
-                              label: Text(_pickedVideo != null
-                                  ? 'Video Selected'
-                                  : (_initialVideoUrl != null && _initialVideoUrl!.isNotEmpty
-                                      ? 'Change Video'
-                                      : 'Upload Video')),
+                              onPressed: () => _pickFile(
+                                FileType.video,
+                                onFilePicked: (file, fileName) {
+                                  setState(() {
+                                    _pickedVideo = file;
+                                    _videoFileName = fileName;
+                                  });
+                                },
+                              ),
+                              icon: const Icon(
+                                Icons.videocam,
+                                color: Color(0xFF92400E),
+                              ),
+                              label: Text(
+                                _pickedVideo != null
+                                    ? 'Video Selected'
+                                    : (_videoFileName != null &&
+                                              _videoFileName!.isNotEmpty
+                                          ? 'Change Video'
+                                          : 'Select Video'),
+                              ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _pickedVideo != null || (_initialVideoUrl != null && _initialVideoUrl!.isNotEmpty)
+                                backgroundColor:
+                                    _pickedVideo != null ||
+                                        (_initialVideoUrl != null &&
+                                            _initialVideoUrl!.isNotEmpty)
                                     ? const Color(0xFFFFFBEB)
                                     : const Color(0xFFF3F4F6),
-                                foregroundColor: _pickedVideo != null || (_initialVideoUrl != null && _initialVideoUrl!.isNotEmpty)
+                                foregroundColor:
+                                    _pickedVideo != null ||
+                                        (_initialVideoUrl != null &&
+                                            _initialVideoUrl!.isNotEmpty)
                                     ? const Color(0xFF92400E)
                                     : const Color(0xFF374151),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      if (_pickedVideo != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text('File: ${_pickedVideo!.path.split('/').last}', style: const TextStyle(fontSize: 12, color: Color(0xFF92400E))),
-                        ),
-                      if (_pickedVideo == null && _initialVideoUrl != null && _initialVideoUrl!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text('Current File: ${_initialVideoUrl!.split('/').last}', style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB))),
-                        ),
+                      _buildFileInfo(_videoFileName),
                       const SizedBox(height: 24),
                       Row(
                         children: [
@@ -601,13 +683,20 @@ class __ChapterDialogState extends State<_ChapterDialog> {
                               onPressed: () => Navigator.of(context).pop(),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF6B7280),
-                                side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                side: const BorderSide(
+                                  color: Color(0xFFCBD5E1),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
-                              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -620,9 +709,14 @@ class __ChapterDialogState extends State<_ChapterDialog> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
-                              child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w600)),
+                              child: const Text(
+                                'Save',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
                             ),
                           ),
                         ],

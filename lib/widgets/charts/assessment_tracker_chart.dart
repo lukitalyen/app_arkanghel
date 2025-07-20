@@ -19,8 +19,9 @@ class AssessmentTrackerChart extends StatelessWidget {
       _ChartData('CM', 16, 4),
     ];
 
-    return Column(
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        children: [
         _buildLegend(context),
         const SizedBox(height: 16),
         AspectRatio(
@@ -97,6 +98,7 @@ class AssessmentTrackerChart extends StatelessWidget {
           ),
         ),
       ],
+    ),
     );
   }
 

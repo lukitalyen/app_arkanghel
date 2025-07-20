@@ -6,6 +6,7 @@ class Question {
   final QuestionType type;
   final List<String> options;
   final int correctAnswerIndex;
+  final String? correctAnswer; // For short answer questions
 
   Question({
     required this.id,
@@ -13,6 +14,7 @@ class Question {
     required this.type,
     required this.options,
     required this.correctAnswerIndex,
+    this.correctAnswer,
   });
 
   Question copyWith({
@@ -21,6 +23,7 @@ class Question {
     QuestionType? type,
     List<String>? options,
     int? correctAnswerIndex,
+    String? correctAnswer,
   }) {
     return Question(
       id: id ?? this.id,
@@ -28,6 +31,7 @@ class Question {
       type: type ?? this.type,
       options: options ?? this.options,
       correctAnswerIndex: correctAnswerIndex ?? this.correctAnswerIndex,
+      correctAnswer: correctAnswer ?? this.correctAnswer,
     );
   }
 }

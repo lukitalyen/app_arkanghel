@@ -280,8 +280,12 @@ class _AddEditAssessmentScreenState extends State<AddEditAssessmentScreen> {
             ),
           ),
           items: contentService.workstreams.map((w) {
-            return DropdownMenuItem<String>(value: w.id, child: Text(w.title));
+            return DropdownMenuItem<String>(
+              value: w.id,
+              child: Text(w.title, overflow: TextOverflow.ellipsis),
+            );
           }).toList(),
+          isExpanded: true,
           onChanged: (v) => setState(() => _workstreamId = v),
           validator: (v) => v == null ? 'Please select a workstream.' : null,
         );

@@ -63,7 +63,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Expanded(
                 child: SummaryCard(
                   title: 'Completed Assessments',
-                  value: '1.2k',
+                  value: '31',
                   icon: Icons.assignment_turned_in_outlined,
                   color: Colors.orange,
                   percentage: '15.2%',
@@ -88,7 +88,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ChartCard(
             title: 'User Engagements Overview',
             onViewAll: () {},
-            child: SizedBox(height: 200, child: OverviewChart(period: _selectedPeriod)),
+            child: SizedBox(
+              height: 200,
+              child: OverviewChart(period: _selectedPeriod),
+            ),
             selectedPeriod: _selectedPeriod,
             onPeriodChanged: (period) {
               if (period != null) {
@@ -110,7 +113,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             title: 'Top User Completed Tracker',
             child: TopUserList(),
           ),
-
         ],
       ),
     );
@@ -182,7 +184,10 @@ class SummaryCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   percentage,
-                  style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: isPositive ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -225,23 +230,40 @@ class ChartCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 if (selectedPeriod != null && onPeriodChanged != null)
                   ToggleButtons(
-                    isSelected: TimePeriod.values.map((e) => e == selectedPeriod).toList(),
+                    isSelected: TimePeriod.values
+                        .map((e) => e == selectedPeriod)
+                        .toList(),
                     onPressed: (index) {
                       onPeriodChanged!(TimePeriod.values[index]);
                     },
                     borderRadius: BorderRadius.circular(8),
                     selectedColor: Colors.white,
                     fillColor: Colors.blue,
-                    constraints: const BoxConstraints(minHeight: 30, minWidth: 50),
+                    constraints: const BoxConstraints(
+                      minHeight: 30,
+                      minWidth: 50,
+                    ),
                     children: const [
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('Week')),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('Month')),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('Year')),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('Week'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('Month'),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('Year'),
+                      ),
                     ],
                   )
                 else if (onViewAll != null)

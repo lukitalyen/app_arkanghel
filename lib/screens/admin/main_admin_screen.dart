@@ -29,7 +29,7 @@ class _MainAdminScreenState extends State<MainAdminScreen> {
     'User Management',
     'Workstream Management',
     'Assessment Management',
-    'Leaderboard Management',
+    'Leaderboard',
   ];
 
   void _onItemTapped(int index) {
